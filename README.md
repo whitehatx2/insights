@@ -3,3 +3,6 @@ Modifications include UTF-8 encoding to handle non-ASCII characters, writing com
 Tweet separator used is NEW TWEET.  
 Code attribution -
 https://github.com/arngarden/TwitterStream
+
+Contributors:
+Anikate Singh, Joshua Cherian Manoj, Ramkumar Chokkalingam
