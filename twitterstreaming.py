@@ -9,10 +9,10 @@ import oauth2 as oauth
 API_ENDPOINT_URL = 'https://stream.twitter.com/1.1/statuses/filter.json'
 USER_AGENT = 'TwitterStream 1.0'
 
-OAUTH_KEYS = {'consumer_key': '2zpVcT9pzdG9bXQKGCofA',
-              'consumer_secret': 'eIGCq4m3BS2N8e215WWAcFiCBPkGTpZSp4QACOXEs',
-              'access_token_key': '116488022-n8id9eVybdHDheyrG7vKi7JRq06gu90kATkn9SHT',
-              'access_token_secret': 'BzD0jAvRBlgAAxnPrhbOz5VTMFQ1E1n7sSHQAFw6vLs'}
+OAUTH_KEYS = {'consumer_key': '',
+              'consumer_secret': '',
+              'access_token_key': '',
+              'access_token_secret': ''}
 
 POST_PARAMS = {'include_entities': 0,
                'stall_warning': 'true',
