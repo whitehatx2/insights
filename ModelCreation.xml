@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<process version="5.3.008">
+  <context>
+    <input/>
+    <output/>
+    <macros/>
+  </context>
+  <operator activated="true" class="process" compatibility="5.3.008" expanded="true" name="Process">
+    <process expanded="true">
+      <operator activated="true" class="read_database" compatibility="5.3.008" expanded="true" height="60" name="Read Database" width="90" x="45" y="30">
+        <parameter key="define_connection" value="url"/>
+        <parameter key="database_url" value="jdbc:mysql://127.0.0.1:3306/insights"/>
+        <parameter key="username" value="root"/>
+        <parameter key="password" value="NYmXCWMrQyCYra5h5ZFK7w=="/>
+        <parameter key="query" value="SELECT tweet_id,tweet_text,category FROM `tweets` where brand = 'Walmart' and category = 'Positive' or brand = 'Walmart' and category = 'Negative';"/>
+        <enumeration key="parameters"/>
+      </operator>
+      <operator activated="true" class="set_role" compatibility="5.3.008" expanded="true" height="76" name="Set Role" width="90" x="179" y="30">
+        <parameter key="attribute_name" value="tweet_id"/>
+        <parameter key="target_role" value="id"/>
+        <list key="set_additional_roles"/>
+      </operator>
+      <operator activated="true" class="text:process_document_from_data" compatibility="5.3.000" expanded="true" height="76" name="Process Documents from Data" width="90" x="313" y="30">
+        <parameter key="keep_text" value="true"/>
+        <parameter key="prune_method" value="percentual"/>
+        <parameter key="prune_above_percent" value="95.0"/>
+        <list key="specify_weights"/>
+        <process expanded="true">
+          <operator activated="true" class="text:tokenize" compatibility="5.3.000" expanded="true" height="60" name="Tokenize" width="90" x="45" y="30"/>
+          <operator activated="true" class="text:filter_by_length" compatibility="5.3.000" expanded="true" height="60" name="Filter Tokens (by Length)" width="90" x="179" y="120"/>
+          <operator activated="true" class="text:stem_porter" compatibility="5.3.000" expanded="true" height="60" name="Stem (Porter)" width="90" x="380" y="120"/>
+          <operator activated="true" class="text:filter_stopwords_english" compatibility="5.3.000" expanded="true" height="60" name="Filter Stopwords (English)" width="90" x="514" y="120"/>
+          <connect from_port="document" to_op="Tokenize" to_port="document"/>
+          <connect from_op="Tokenize" from_port="document" to_op="Filter Tokens (by Length)" to_port="document"/>
+          <connect from_op="Filter Tokens (by Length)" from_port="document" to_op="Stem (Porter)" to_port="document"/>
+          <connect from_op="Stem (Porter)" from_port="document" to_op="Filter Stopwords (English)" to_port="document"/>
+          <connect from_op="Filter Stopwords (English)" from_port="document" to_port="document 1"/>
+          <portSpacing port="source_document" spacing="0"/>
+          <portSpacing port="sink_document 1" spacing="0"/>
+          <portSpacing port="sink_document 2" spacing="0"/>
+        </process>
+      </operator>
+      <operator activated="true" class="set_role" compatibility="5.3.008" expanded="true" height="76" name="Set Role (2)" width="90" x="447" y="30">
+        <parameter key="attribute_name" value="category"/>
+        <parameter key="target_role" value="label"/>
+        <list key="set_additional_roles"/>
+      </operator>
+      <operator activated="true" class="x_validation" compatibility="5.3.008" expanded="true" height="112" name="Validation" width="90" x="581" y="30">
+        <parameter key="number_of_validations" value="5"/>
+        <process expanded="true">
+          <operator activated="true" class="select_attributes" compatibility="5.3.008" expanded="true" height="76" name="Select Attributes" width="90" x="45" y="30">
+            <parameter key="attribute_filter_type" value="no_missing_values"/>
+          </operator>
+          <operator activated="true" class="k_nn" compatibility="5.3.008" expanded="true" height="76" name="k-NN" width="90" x="179" y="30"/>
+          <connect from_port="training" to_op="Select Attributes" to_port="example set input"/>
+          <connect from_op="Select Attributes" from_port="example set output" to_op="k-NN" to_port="training set"/>
+          <connect from_op="k-NN" from_port="model" to_port="model"/>
+          <portSpacing port="source_training" spacing="0"/>
+          <portSpacing port="sink_model" spacing="0"/>
+          <portSpacing port="sink_through 1" spacing="0"/>
+        </process>
+        <process expanded="true">
+          <operator activated="true" class="apply_model" compatibility="5.3.008" expanded="true" height="76" name="Apply Model (2)" width="90" x="45" y="30">
+            <list key="application_parameters"/>
+          </operator>
+          <operator activated="true" class="performance" compatibility="5.3.008" expanded="true" height="76" name="Performance" width="90" x="179" y="165"/>
+          <connect from_port="model" to_op="Apply Model (2)" to_port="model"/>
+          <connect from_port="test set" to_op="Apply Model (2)" to_port="unlabelled data"/>
+          <connect from_op="Apply Model (2)" from_port="labelled data" to_op="Performance" to_port="labelled data"/>
+          <connect from_op="Performance" from_port="performance" to_port="averagable 1"/>
+          <portSpacing port="source_model" spacing="0"/>
+          <portSpacing port="source_test set" spacing="0"/>
+          <portSpacing port="source_through 1" spacing="0"/>
+          <portSpacing port="sink_averagable 1" spacing="0"/>
+          <portSpacing port="sink_averagable 2" spacing="0"/>
+        </process>
+      </operator>
+      <operator activated="true" class="read_database" compatibility="5.3.008" expanded="true" height="60" name="Read Database (2)" width="90" x="45" y="165">
+        <parameter key="define_connection" value="url"/>
+        <parameter key="database_url" value="jdbc:mysql://127.0.0.1:3306/insights"/>
+        <parameter key="username" value="root"/>
+        <parameter key="password" value="NYmXCWMrQyCYra5h5ZFK7w=="/>
+        <parameter key="query" value="SELECT tweet_text,tweet_id FROM `tweets` where brand = 'Walmart' and  category IS NULL LIMIT 0,99000;"/>
+        <enumeration key="parameters"/>
+      </operator>
+      <operator activated="true" class="set_role" compatibility="5.3.008" expanded="true" height="76" name="Set Role (3)" width="90" x="179" y="165">
+        <parameter key="attribute_name" value="tweet_id"/>
+        <parameter key="target_role" value="id"/>
+        <list key="set_additional_roles"/>
+      </operator>
+      <operator activated="true" class="text:process_document_from_data" compatibility="5.3.000" expanded="true" height="76" name="Process Documents from Data (2)" width="90" x="313" y="165">
+        <list key="specify_weights"/>
+        <process expanded="true">
+          <operator activated="true" class="text:tokenize" compatibility="5.3.000" expanded="true" height="60" name="Tokenize (2)" width="90" x="112" y="30"/>
+          <operator activated="true" class="text:filter_stopwords_english" compatibility="5.3.000" expanded="true" height="60" name="Filter Stopwords (2)" width="90" x="246" y="30"/>
+          <operator activated="true" class="text:stem_porter" compatibility="5.3.000" expanded="true" height="60" name="Stem (2)" width="90" x="447" y="30"/>
+          <operator activated="true" class="text:filter_by_length" compatibility="5.3.000" expanded="true" height="60" name="Filter Tokens (2)" width="90" x="581" y="30"/>
+          <connect from_port="document" to_op="Tokenize (2)" to_port="document"/>
+          <connect from_op="Tokenize (2)" from_port="document" to_op="Filter Stopwords (2)" to_port="document"/>
+          <connect from_op="Filter Stopwords (2)" from_port="document" to_op="Stem (2)" to_port="document"/>
+          <connect from_op="Stem (2)" from_port="document" to_op="Filter Tokens (2)" to_port="document"/>
+          <connect from_op="Filter Tokens (2)" from_port="document" to_port="document 1"/>
+          <portSpacing port="source_document" spacing="0"/>
+          <portSpacing port="sink_document 1" spacing="0"/>
+          <portSpacing port="sink_document 2" spacing="0"/>
+        </process>
+      </operator>
+      <operator activated="true" class="set_role" compatibility="5.3.008" expanded="true" height="76" name="Set Role (4)" width="90" x="447" y="165">
+        <parameter key="attribute_name" value="tweet_text"/>
+        <list key="set_additional_roles"/>
+      </operator>
+      <operator activated="true" class="apply_model" compatibility="5.3.008" expanded="true" height="76" name="Apply Model" width="90" x="581" y="255">
+        <list key="application_parameters"/>
+      </operator>
+      <connect from_op="Read Database" from_port="output" to_op="Set Role" to_port="example set input"/>
+      <connect from_op="Set Role" from_port="original" to_op="Process Documents from Data" to_port="example set"/>
+      <connect from_op="Process Documents from Data" from_port="example set" to_op="Set Role (2)" to_port="example set input"/>
+      <connect from_op="Set Role (2)" from_port="example set output" to_op="Validation" to_port="training"/>
+      <connect from_op="Validation" from_port="model" to_op="Apply Model" to_port="model"/>
+      <connect from_op="Validation" from_port="training" to_port="result 1"/>
+      <connect from_op="Validation" from_port="averagable 1" to_port="result 2"/>
+      <connect from_op="Read Database (2)" from_port="output" to_op="Set Role (3)" to_port="example set input"/>
+      <connect from_op="Set Role (3)" from_port="original" to_op="Process Documents from Data (2)" to_port="example set"/>
+      <connect from_op="Process Documents from Data (2)" from_port="example set" to_op="Set Role (4)" to_port="example set input"/>
+      <connect from_op="Set Role (4)" from_port="example set output" to_op="Apply Model" to_port="unlabelled data"/>
+      <connect from_op="Apply Model" from_port="labelled data" to_port="result 3"/>
+      <portSpacing port="source_input 1" spacing="0"/>
+      <portSpacing port="sink_result 1" spacing="0"/>
+      <portSpacing port="sink_result 2" spacing="0"/>
+      <portSpacing port="sink_result 3" spacing="0"/>
+      <portSpacing port="sink_result 4" spacing="0"/>
+    </process>
+  </operator>
+</process>
